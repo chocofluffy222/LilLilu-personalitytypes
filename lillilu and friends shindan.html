@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>LilLilu診断｜あなたはどのフレンズ？</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg-gradient-start: #ffeef8;
+      --bg-gradient-end: #e7e8ff;
+      --card-bg: #ffffff;
+      --accent: #f9a8d4;
+      --accent-strong: #ec4899;
+      --text-main: #4b5563;
+      --text-soft: #6b7280;
+      --shadow-soft: 0 10px 25px rgba(148, 163, 184, 0.25);
+      --radius-card: 18px;
+      --radius-pill: 999px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: linear-gradient(145deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      color: var(--text-main);
+    }
+
+    .page-wrapper {
+      width: 100%;
+      max-width: 900px;
+      padding: 24px 16px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    header {
+      text-align: center;
+      padding-bottom: 4px;
+    }
+
+    header h1 {
+      font-size: clamp(1.5rem, 5vw, 2.2rem);
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      font-size: 0.9rem;
+      color: var(--text-soft);
+      line-height: 1.6;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-soft);
+      padding: 20px 18px 22px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .tagline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+      background: rgba(244, 114, 182, 0.08);
+      color: var(--accent-strong);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .tagline span {
+      font-size: 1rem;
+    }
+
+    .intro-title {
+      margin-top: 12px;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .intro-text {
+      margin-top: 8px;
+      font-size: 0.9rem;
+      color: var(--text-soft);
+      line-height: 1.8;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 28px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.12s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: #ffffff;
+      box-shadow: 0 8px 18px rgba(236, 72, 153, 0.35);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      color: var(--text-soft);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(148, 163, 184, 0.25);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 5px 12px rgba(148, 163, 184, 0.25);
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    #quiz-section,
+    #result-section {
+      display: none;
+    }
+
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-size: 0.85rem;
+      color: var(--text-soft);
+    }
+
+    .question-step {
+      font-weight: 600;
+    }
+
+    .progress-bar {
+      flex: 1;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.2);
+      overflow: hidden;
+    }
+
+    .progress-inner {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #f9a8d4, #93c5fd);
+      transition: width 0.25s ease;
+    }
+
+    .question-title {
+      margin: 4px 0 16px;
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .option-btn {
+      width: 100%;
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: #f9fafb;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      transition: background 0.12s ease, transform 0.06s ease, box-shadow 0.12s ease,
+        border-color 0.12s ease;
+    }
+
+    .option-label {
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-top: 1px;
+      color: #9ca3af;
+    }
+
+    .option-text {
+      flex: 1;
+    }
+
+    .option-btn:hover {
+      background: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(148, 163, 184, 0.3);
+      border-color: rgba(236, 72, 153, 0.6);
+    }
+
+    .option-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(148, 163, 184, 0.4);
+    }
+
+    .result-character {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .result-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-soft);
+      margin-bottom: 14px;
+    }
+
+    .result-body {
+      font-size: 0.93rem;
+      line-height: 1.9;
+      margin-bottom: 16px;
+      color: var(--text-main);
+    }
+
+    .result-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .result-tag {
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.08);
+      color: var(--text-soft);
+    }
+
+    .share-text {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-soft);
+      padding-top: 4px;
+    }
+
+    footer span {
+      opacity: 0.8;
+    }
+
+    @media (min-width: 640px) {
+      .card {
+        padding: 24px 26px 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <header>
+      <h1>LilLilu & Friends 診断</h1>
+      <p>いまのあなたの「こころの雰囲気」にいちばん近いのは、どのフレンズ？<br />
+        かんたんな質問に答えて、今日のあなたに寄りそうキャラクターを見つけてみてね。</p>
+    </header>
+
+    <main>
+      <!-- Intro -->
+      <section id="intro-section" class="card">
+        <div class="tagline">
+          <span>🎪</span>
+          <span>LilLilu’s Little Check</span>
+        </div>
+        <div class="intro-title">3分でわかる、きょうの「あなたタイプ」</div>
+        <p class="intro-text">
+          深い性格診断というよりも、<strong>その日の気分やこころの状態を、やさしく言葉にしてあげるためのミニ診断</strong>です。<br />
+          結果は「当たっている / 当たっていない」ではなく、「こんな自分もいいかも」と受けとめてあげるためのヒントとして使ってください。
+        </p>
+        <div class="center" style="margin-top: 18px;">
+          <button id="start-btn" class="btn btn-primary">
+            診断をはじめる
+            <span>▶</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Quiz -->
+      <section id="quiz-section" class="card">
+        <div class="question-header">
+          <div class="question-step" id="question-step">Q1 / 4</div>
+          <div class="progress-bar">
+            <div class="progress-inner" id="progress-inner"></div>
+          </div>
+        </div>
+        <h2 class="question-title" id="question-text">質問テキスト</h2>
+        <div class="options" id="options-container">
+          <!-- JSで埋める -->
+        </div>
+      </section>
+
+      <!-- Result -->
+      <section id="result-section" class="card">
+        <div class="tagline">
+          <span>✨</span>
+          <span>診断結果</span>
+        </div>
+        <h2 class="result-character" id="result-title"></h2>
+        <div class="result-subtitle" id="result-subtitle"></div>
+        <p class="result-body" id="result-body"></p>
+
+        <div class="result-tags" id="result-tags"></div>
+
+        <div class="center">
+          <button id="retry-btn" class="btn btn-ghost">
+            もう一度診断する
+          </button>
+        </div>
+        <p class="share-text">
+          ※ 文章やキャラクター名は、リルリルの世界観に合わせて自由に書き換えてOKです。
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <span>© LilLilu & Friends / chocofluffy</span>
+    </footer>
+  </div>
+
+  <script>
+    // === 診断ロジック設定 =====================================
+
+    // キャラクターの定義（結果テキストをここで編集できます）
+    const characters = {
+      lilu: {
+        name: "LilLilu（リルリル）タイプ",
+        subtitle: "やさしさで、みんなをふわっと包みこむ人。",
+        body: "まわりの人がホッとできるような雰囲気をもっているみたい。自分の気持ちよりも、つい相手の気持ちを優先しがちだけど、そのやさしさは、こころのあたたかさそのもの。すこし疲れた日は、誰かのためだけじゃなくて、自分のためにも「やさしくしてあげる時間」をつくってあげてね。",
+        tags: ["思いやり", "安心感", "聞き役"]
+      },
+      rosy: {
+        name: "Rosy（ロージー）タイプ",
+        subtitle: "小さな「かわいい」を見つける名人。",
+        body: "季節の変化や、身近な“ときめき”を見つけるのが上手なあなた。うれしかったことを誰かとシェアしたくなるのもロージーっぽいところ。ひとりで抱え込まずに、うれしかったことも、ちょっぴりさみしかったことも、信頼できる人におすそ分けしてみると、もっと心が軽くなりそう。",
+        tags: ["ポジティブ", "感性豊か", "シェア好き"]
+      },
+      finn: {
+        name: "Finn（フィン）タイプ",
+        subtitle: "『ようこそ！』で場をあたためるムードメーカー。",
+        body: "本当はちょっぴりドキドキしやすいのに、いざというときは笑顔で場をつなげるフィン気質のあなた。うまく話そうとしなくても大丈夫。「きいてみたい」と思ったことを素直にきいてみるだけで、十分にステキなコミュニケーションになっているよ。",
+        tags: ["ムードメーカー", "好奇心", "聞き上手"]
+      },
+      bonbon: {
+        name: "Bonbon（ボンボン）タイプ",
+        subtitle: "コツコツがんばる、あったかいがんばり屋さん。",
+        body: "自分なりのペースで、目の前のことに一生懸命になれるタイプ。結果よりもプロセスをだいじにできるのがボンボンらしさ。ときどき立ち止まって、『ここまで来た自分、よくやってる！』と、ちいさなガッツポーズをしてあげてね。",
+        tags: ["努力家", "誠実", "マイペース"]
+      },
+      espie: {
+        name: "Espie（エスピー）タイプ",
+        subtitle: "だれかを包みこむ、あったかブランケット。",
+        body: "困っている人や、不安そうな人を見つけると、そっと寄り添いたくなるエスピー気質。支える側に回ることが多いからこそ、自分の不安や疲れを『ちゃんと感じてあげる時間』もだいじにしてね。あなた自身が安心できる場所も、ちゃんと守っていっていいんだよ。",
+        tags: ["包容力", "共感力", "ささえ役"]
+      },
+      gigi: {
+        name: "Gigi（ジジ）タイプ",
+        subtitle: "一歩ひいて全体をながめる、やさしい見守り役。",
+        body: "感情に流され過ぎず、少し高いところから全体を見守るジジのような視点を持っているみたい。だからこそ、『自分の気持ち』を後回しにしがちな一面も。ときどきは、子どものようにわがままな気持ちをノートに書いてみるなど、「本音の声」を拾ってあげる時間をつくってみてね。",
+        tags: ["俯瞰", "冷静さ", "見守り"]
+      },
+      levy: {
+        name: "Levy（レヴィ）タイプ",
+        subtitle: "静かなところで光る、星のような存在。",
+        body: "にぎやかな場よりも、少人数や落ち着いた時間のなかで、自分らしさが光るタイプ。じっくり考えたり、ひとりの世界にひたる時間も大切な栄養。『今日はどんな小さな光があったかな？』と、寝る前に1つだけ思い出してみると、レヴィらしい穏やかな時間が育っていきそう。",
+        tags: ["マイワールド", "静かな情熱", "夜型かも？"]
+      }
+    };
+
+    // 質問の定義（質問や選択肢は自由に書き換えてOK）
+    const questions = [
+      {
+        text: "休日の朝、いちばん『しっくりくる』スタートのしかたは？",
+        options: [
+          { label: "A", text: "ゆっくり紅茶やコーヒーをいれて、静かに気持ちを整える。", type: "levy" },
+          { label: "B", text: "大切な人とおしゃべりしながら、のんびり過ごす。", type: "lilu" },
+          { label: "C", text: "思いつきでお出かけしたり、誰かを誘ったりしてみる。", type: "finn" },
+          { label: "D", text: "やりたかったことリストを見て、ひとつずつ片づけていく。", type: "bonbon" }
+        ]
+      },
+      {
+        text: "友だちがちょっと元気なさそう…。あなたならまず何をする？",
+        options: [
+          { label: "A", text: "『大丈夫？』とそっと声をかけて、横にいる時間をふやす。", type: "espie" },
+          { label: "B", text: "さりげなく可愛いものや、おもしろ動画を共有して笑ってもらう。", type: "rosy" },
+          { label: "C", text: "まずは話をきいて、状況を整理するのを手伝う。", type: "gigi" },
+          { label: "D", text: "『よかったら一緒に◯◯しない？』と、気分転換に誘う。", type: "finn" }
+        ]
+      },
+      {
+        text: "自分のがんばり方について、いちばん近いのは？",
+        options: [
+          { label: "A", text: "目立たなくてもいいから、コツコツ積み重ねるタイプだと思う。", type: "bonbon" },
+          { label: "B", text: "ここぞというときに集中して、一気にエネルギーを出す。", type: "levy" },
+          { label: "C", text: "誰かの『ありがとう』があると、ぐっとがんばれる。", type: "lilu" },
+          { label: "D", text: "その場の雰囲気を見ながら、足りないところを自然と埋めがち。", type: "gigi" }
+        ]
+      },
+      {
+        text: "パーティーや集まりのとき、あなたのポジションは？",
+        options: [
+          { label: "A", text: "場の空気をあったかく保つ、ちょっとしたムードメーカー。", type: "finn" },
+          { label: "B", text: "少人数でじっくり話しているときに、いちばん安心する。", type: "espie" },
+          { label: "C", text: "写真を撮ったり、可愛いものを見つけては共有している。", type: "rosy" },
+          { label: "D", text: "全体を見ながら、そっとフォローに回っていることが多い。", type: "gigi" }
+        ]
+      }
+    ];
+
+    // === 画面制御 =============================================
+
+    const introSection = document.getElementById("intro-section");
+    const quizSection = document.getElementById("quiz-section");
+    const resultSection = document.getElementById("result-section");
+
+    const startBtn = document.getElementById("start-btn");
+    const retryBtn = document.getElementById("retry-btn");
+
+    const questionStepEl = document.getElementById("question-step");
+    const progressInnerEl = document.getElementById("progress-inner");
+    const questionTextEl = document.getElementById("question-text");
+    const optionsContainerEl = document.getElementById("options-container");
+
+    const resultTitleEl = document.getElementById("result-title");
+    const resultSubtitleEl = document.getElementById("result-subtitle");
+    const resultBodyEl = document.getElementById("result-body");
+    const resultTagsEl = document.getElementById("result-tags");
+
+    let currentQuestionIndex = 0;
+    let scores = {};
+
+    function resetQuiz() {
+      currentQuestionIndex = 0;
+      scores = {};
+      Object.keys(characters).forEach((key) => {
+        scores[key] = 0;
+      });
+    }
+
+    function updateProgress() {
+      const total = questions.length;
+      const step = currentQuestionIndex + 1;
+      questionStepEl.textContent = `Q${step} / ${total}`;
+      const percent = (step / total) * 100;
+      progressInnerEl.style.width = `${percent}%`;
+    }
+
+    function renderQuestion() {
+      const q = questions[currentQuestionIndex];
+      if (!q) return;
+
+      updateProgress();
+      questionTextEl.textContent = q.text;
+
+      optionsContainerEl.innerHTML = "";
+
+      q.options.forEach((opt) => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.type = "button";
+        btn.addEventListener("click", () => handleAnswer(opt.type));
+
+        const labelSpan = document.createElement("div");
+        labelSpan.className = "option-label";
+        labelSpan.textContent = opt.label;
+
+        const textSpan = document.createElement("div");
+        textSpan.className = "option-text";
+        textSpan.textContent = opt.text;
+
+        btn.appendChild(labelSpan);
+        btn.appendChild(textSpan);
+
+        optionsContainerEl.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(type) {
+      if (!scores[type]) {
+        scores[type] = 0;
+      }
+      scores[type] += 1;
+
+      currentQuestionIndex += 1;
+
+      if (currentQuestionIndex < questions.length) {
+        renderQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      // もっともスコアの高いキャラクターを選ぶ
+      const entries = Object.entries(scores);
+      entries.sort((a, b) => b[1] - a[1]);
+      const [bestKey] = entries[0];
+      const char = characters[bestKey];
+
+      resultTitleEl.textContent = char.name;
+      resultSubtitleEl.textContent = char.subtitle;
+      resultBodyEl.textContent = char.body;
+
+      resultTagsEl.innerHTML = "";
+      char.tags.forEach((tag) => {
+        const tagEl = document.createElement("span");
+        tagEl.className = "result-tag";
+        tagEl.textContent = tag;
+        resultTagsEl.appendChild(tagEl);
+      });
+
+      quizSection.style.display = "none";
+      resultSection.style.display = "block";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function startQuiz() {
+      resetQuiz();
+      introSection.style.display = "none";
+      resultSection.style.display = "none";
+      quizSection.style.display = "block";
+      renderQuestion();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function retryQuiz() {
+      introSection.style.display = "none";
+      resultSection.style.display = "none";
+      quizSection.style.display = "block";
+      resetQuiz();
+      renderQuestion();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    startBtn.addEventListener("click", startQuiz);
+    retryBtn.addEventListener("click", retryQuiz);
+
+    // 初期化（結果用スコアだけ先に準備しておく）
+    resetQuiz();
+  </script>
+</body>
+</html>
